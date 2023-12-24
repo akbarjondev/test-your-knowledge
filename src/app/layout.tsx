@@ -1,6 +1,8 @@
 import { Header } from '@/components/block/header/header'
 import React, { ReactNode } from 'react'
 import '@/styles/globals.scss'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
 interface LayoutProps {
   children: ReactNode
@@ -11,11 +13,17 @@ export const metadata = {
   description: 'Bilimingizni sinab oling',
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = async ({ children }: LayoutProps) => {
+  const supabase = createServerComponentClient({ cookies })
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
   return (
     <html>
       <body>
-        <Header />
+        <Header userSession={session?.user} />
         <main className='container mx-auto'>{children}</main>
       </body>
     </html>

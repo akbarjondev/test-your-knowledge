@@ -2,6 +2,8 @@ import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(req: NextRequest) {
+  // console.log('middleware')
+
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
@@ -23,5 +25,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/account'],
+  matcher: ['/', '/account/:path*', '/dashboard/:path*'],
 }
