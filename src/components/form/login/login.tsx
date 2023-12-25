@@ -13,8 +13,7 @@ export const AuthForm = () => {
       supabaseClient={supabase}
       view='magic_link'
       appearance={{ theme: ThemeSupa }}
-      theme='dark'
-      providers={['github', 'google']}
+      providers={[]}
       redirectTo='http://localhost:3000/auth/callback'
     />
   )

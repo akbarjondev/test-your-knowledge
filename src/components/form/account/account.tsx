@@ -1,10 +1,12 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
-import { Database } from '../../types/supabase'
+import { Database } from '../../../types/supabase'
 import {
   Session,
   createClientComponentClient,
 } from '@supabase/auth-helpers-nextjs'
+import { Input } from '@/components/shadcn/ui/input'
+import { Label } from '@/components/shadcn/ui/label'
 
 export default function AccountForm({ session }: { session: Session | null }) {
   const supabase = createClientComponentClient<Database>()
@@ -81,8 +83,8 @@ export default function AccountForm({ session }: { session: Session | null }) {
   return (
     <div className='form-widget'>
       <div>
-        <label htmlFor='email'>Email</label>
-        <input id='email' type='text' value={session?.user.email} disabled />
+        <Label htmlFor='email'>Pochta</Label>
+        <Input id='email' type='text' value={session?.user.email} disabled />
       </div>
       <div>
         <label htmlFor='fullName'>Full Name</label>

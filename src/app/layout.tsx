@@ -3,12 +3,13 @@ import React, { ReactNode } from 'react'
 import '@/styles/globals.scss'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { Metadata } from 'next'
 
 interface LayoutProps {
   children: ReactNode
 }
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Bilimingizni sinab oling',
   description: 'Bilimingizni sinab oling',
 }
