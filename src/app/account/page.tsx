@@ -9,6 +9,27 @@ export default async function Account() {
   const {
     data: { session },
   } = await supabase.auth.getSession()
+  const user = session?.user
 
-  return <AccountForm session={session} />
+  if (!user) return null
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, full_name, username')
+    .eq('id', user.id)
+
+  const userData = data?.[0]
+
+  if (!userData) return null
+
+  return (
+    <section className='mt-10'>
+      <AccountForm
+        user={{
+          email: user.email,
+          ...userData,
+        }}
+      />
+    </section>
+  )
 }

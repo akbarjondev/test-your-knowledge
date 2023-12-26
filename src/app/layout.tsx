@@ -4,6 +4,8 @@ import '@/styles/globals.scss'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Metadata } from 'next'
+import ProgressBar from '@/components/primitive/progress-bar/progress-bar'
+import { Toaster } from 'react-hot-toast'
 
 interface LayoutProps {
   children: ReactNode
@@ -24,8 +26,11 @@ const Layout = async ({ children }: LayoutProps) => {
   return (
     <html>
       <body>
-        <Header userSession={session?.user} />
-        <main className='container mx-auto'>{children}</main>
+        <ProgressBar>
+          <Toaster />
+          <Header userSession={session?.user} />
+          <main className='container mx-auto'>{children}</main>
+        </ProgressBar>
       </body>
     </html>
   )

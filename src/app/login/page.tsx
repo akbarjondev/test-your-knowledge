@@ -1,7 +1,7 @@
 import { AuthForm } from '@/components/form/login/login'
 import React from 'react'
 
-const Page = () => {
+const Page = async () => {
   return (
     <div>
       <h2 className='text-center'>Login</h2>

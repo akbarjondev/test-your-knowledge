@@ -23,7 +23,7 @@ export const Header = ({ userSession }: HeaderProps) => {
             <Link href={'/login'}>Kirish</Link>
           )}
         </div>
-        <Menu userSession={userSession} />
+        <Menu className='md:hidden' userSession={userSession} />
       </nav>
     </header>
   )

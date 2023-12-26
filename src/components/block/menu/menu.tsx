@@ -10,16 +10,21 @@ import { Button } from '@/components/shadcn/ui/button'
 import { MenuSquareIcon } from 'lucide-react'
 import { User } from 'next-auth'
 import { Link } from '@/components/organism/link/link'
+import { cn } from '@/lib/utils'
 
 interface MenuProps {
   userSession: User | null | undefined
+  className?: string
 }
 
-export const Menu = ({ userSession }: MenuProps) => {
+export const Menu = ({ userSession, className }: MenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className='h-auto self-center p-0' variant='ghost'>
+        <Button
+          className={cn('h-auto self-center p-0', className)}
+          variant='ghost'
+        >
           <MenuSquareIcon size={24} />
         </Button>
       </DropdownMenuTrigger>

@@ -1,138 +1,150 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+
+import { useState } from 'react'
 import { Database } from '../../../types/supabase'
-import {
-  Session,
-  createClientComponentClient,
-} from '@supabase/auth-helpers-nextjs'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Input } from '@/components/shadcn/ui/input'
-import { Label } from '@/components/shadcn/ui/label'
+import { Button } from '@/components/shadcn/ui/button'
+import { useForm } from 'react-hook-form'
+import z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { User } from 'next-auth'
+import { toast } from 'react-hot-toast'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/shadcn/ui/form'
 
-export default function AccountForm({ session }: { session: Session | null }) {
+const FormSchema = z.object({
+  fullname: z.string().min(3, {
+    message: "Ism kamida 3 ta belgidan iborat bo'lishi kerak",
+  }),
+  username: z.string().min(3, {
+    message: "Username kamida 3 ta belgidan iborat bo'lishi kerak",
+  }),
+  email: z.string().email({
+    message: "Pochta manzili noto'g'ri",
+  }),
+})
+
+interface AccountFormProps {
+  user: Pick<
+    Database['public']['Tables']['profiles']['Row'],
+    'id' | 'full_name' | 'username'
+  > &
+    Pick<User, 'email'>
+}
+
+export default function AccountForm({ user }: AccountFormProps) {
   const supabase = createClientComponentClient<Database>()
-  const [loading, setLoading] = useState(true)
-  const [fullname, setFullname] = useState<string | null>(null)
-  const [username, setUsername] = useState<string | null>(null)
-  const [website, setWebsite] = useState<string | null>(null)
-  const [avatar_url, setAvatarUrl] = useState<string | null>(null)
-  const user = session?.user
+  const [loading, setLoading] = useState(false)
 
-  const getProfile = useCallback(async () => {
-    if (!user) return
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      fullname: user.full_name || '',
+      username: user.username || '',
+      email: user.email || '',
+    },
+  })
 
-    try {
-      setLoading(true)
-
-      const { data, error, status } = await supabase
-        .from('profiles')
-        .select(`full_name, username, website, avatar_url`)
-        .eq('id', user?.id)
-        .single()
-
-      if (error && status !== 406) {
-        throw error
-      }
-
-      if (data) {
-        setFullname(data.full_name)
-        setUsername(data.username)
-        setWebsite(data.website)
-        setAvatarUrl(data.avatar_url)
-      }
-    } catch (error) {
-      alert('Error loading user data!')
-    } finally {
-      setLoading(false)
-    }
-  }, [user, supabase])
-
-  useEffect(() => {
-    getProfile()
-  }, [user, getProfile])
-
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }: {
-    username: string | null
-    fullname: string | null
-    website: string | null
-    avatar_url: string | null
-  }) {
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    const { fullname, username } = data
     try {
       setLoading(true)
 
       const { error } = await supabase.from('profiles').upsert({
-        id: user?.id as string,
+        id: user.id,
         full_name: fullname,
         username,
-        website,
-        avatar_url,
         updated_at: new Date().toISOString(),
       })
+
       if (error) throw error
-      alert('Profile updated!')
+
+      toast.success('Profil muvaffaqiyatli yangilandi!')
     } catch (error) {
-      alert('Error updating the data!')
+      toast.error('Xatolik yuz berdi!')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className='form-widget'>
-      <div>
-        <Label htmlFor='email'>Pochta</Label>
-        <Input id='email' type='text' value={session?.user.email} disabled />
-      </div>
-      <div>
-        <label htmlFor='fullName'>Full Name</label>
-        <input
-          id='fullName'
-          type='text'
-          value={fullname || ''}
-          onChange={(e) => setFullname(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor='username'>Username</label>
-        <input
-          id='username'
-          type='text'
-          value={username || ''}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div>
-        <label htmlFor='website'>Website</label>
-        <input
-          id='website'
-          type='url'
-          value={website || ''}
-          onChange={(e) => setWebsite(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <button
-          className='button primary block'
-          onClick={() =>
-            updateProfile({ fullname, username, website, avatar_url })
-          }
-          disabled={loading}
+    <div className='flex flex-col'>
+      <Form {...form}>
+        <form
+          className='flex flex-col gap-6'
+          onSubmit={form.handleSubmit(onSubmit)}
         >
-          {loading ? 'Loading ...' : 'Update'}
-        </button>
-      </div>
+          <FormField
+            control={form.control}
+            name='email'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-mail</FormLabel>
+                <FormControl className='max-w-sm'>
+                  <Input {...field} disabled />
+                </FormControl>
+                <FormDescription>
+                  Pochtangizni hozircha almashtira olmaysiz
+                </FormDescription>
+              </FormItem>
+            )}
+          />
 
-      <div>
-        <form action='/auth/signout' method='post'>
-          <button className='button block' type='submit'>
-            Sign out
-          </button>
+          <FormField
+            control={form.control}
+            name='fullname'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>To'liq ism</FormLabel>
+                <FormControl className='max-w-sm'>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='username'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl className='max-w-sm'>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button
+            className='button primary self-start'
+            type='submit'
+            disabled={loading}
+          >
+            Yangilash
+          </Button>
         </form>
-      </div>
+      </Form>
+
+      <form
+        className='mt-6 flex items-center gap-4'
+        action='/auth/signout'
+        method='post'
+      >
+        <Button variant={'destructive'} className='button block' type='submit'>
+          Chiqish
+        </Button>
+      </form>
     </div>
   )
 }
